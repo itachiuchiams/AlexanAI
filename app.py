@@ -12,7 +12,8 @@ from groq import Groq
 GROQ_API_KEY = "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"
 
 st.set_page_config(page_title="AI SuperApp", page_icon="🤖", layout="wide")
-
+st.sidebar.markdown("---")
+st.sidebar.markdown("<h3 style='text-align: center; color: #ff4b4b; font-weight: bold;'>Made by Arsh</h3>", unsafe_allow_html=True)
 # ------------------------------------------------------------------
 # 1. USER AUTHENTICATION SYSTEM (LOCAL STORAGE)
 # ------------------------------------------------------------------
