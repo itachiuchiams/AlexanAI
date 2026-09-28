@@ -207,7 +207,7 @@ with tab_math:
             # 2. Pass exact result + prompt to Groq for full step-by-step breakdown
             try:
                 response = client.chat.completions.create(
-                    model="llama-3.3-70b-specdec",
+                  model="openai/gpt-oss-20b",
                     messages=[
                         {"role": "system", "content": MATH_SYSTEM_PROMPT},
                         {"role": "user", "content": f"Solve and explain step-by-step: {math_expr}. (SymPy hint/result: {exact_res})"}
