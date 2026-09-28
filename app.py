@@ -14,7 +14,14 @@ GROQ_API_KEY = "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"
 st.set_page_config(page_title="AI SuperApp", page_icon="🤖", layout="wide")
 st.sidebar.markdown("---")
 st.sidebar.markdown("<h3 style='text-align: center; color: #ff4b4b; font-weight: bold;'>Made by Arsh</h3>", unsafe_allow_html=True)
-# ------------------------------------------------------------------
+MATH_SYSTEM_PROMPT = """
+You are AlexanAI's specialized Calculus & Trigonometry Engine. 
+When solving mathematical problems, follow these strict guidelines:
+1. Break down every problem into logical, step-by-step phases (e.g., Identify formulas, Substitute, Simplify, Solve).
+2. Use LaTeX formatting for all mathematical expressions (e.g., $\\int x^2 dx$, $\\sin^2(x) + \\cos^2(x) = 1$).
+3. State all identities, substitution rules (U-substitution, Integration by Parts), or calculus theorems used at each step.
+4. Always provide the exact answer first (e.g., in terms of $\\pi$, $\\sqrt{x}$, or fractions) before giving any decimal approximations.
+"""
 # 1. USER AUTHENTICATION SYSTEM (LOCAL STORAGE)
 # ------------------------------------------------------------------
 USER_DB_FILE = "users.json"
@@ -181,17 +188,32 @@ with tab_vision:
 # TAB 3: MATH SOLVER
 # ------------------------------------------------------------------
 with tab_math:
-    st.header("Local SymPy Math Solver")
-    math_expr = st.text_input("Enter a mathematical expression (e.g., x**2 + 2*x + 1):", key="math_input")
+    st.header("Calculus & Math Solver")
+    math_expr = st.text_input("Enter a problem or expression (e.g., diff(sin(x)*x, x) or integrate(x**2, x)):", key="math_input")
     
-    if st.button("Solve / Simplify"):
+    if st.button("Solve Step-by-Step"):
         if math_expr:
+            # 1. Compute exact symbolic output via SymPy first
             try:
                 x = sp.Symbol('x')
                 parsed_expr = sp.sympify(math_expr)
                 simplified = sp.simplify(parsed_expr)
-                
-                st.success("Result:")
-                st.latex(sp.latex(simplified))
+                exact_res = sp.latex(simplified)
+                st.subheader("Exact Symbolic Result")
+                st.latex(exact_res)
             except Exception as e:
-                st.error(f"Math Parsing Error: {e}")
+                exact_res = "N/A"
+
+            # 2. Pass exact result + prompt to Groq for full step-by-step breakdown
+            try:
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {"role": "system", "content": MATH_SYSTEM_PROMPT},
+                        {"role": "user", "content": f"Solve and explain step-by-step: {math_expr}. (SymPy hint/result: {exact_res})"}
+                    ]
+                )
+                st.subheader("Step-by-Step Explanation")
+                st.write(response.choices[0].message.content)
+            except Exception as e:
+                st.error(f"Groq API Error: {e}")
